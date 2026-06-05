@@ -39,3 +39,8 @@ This project scope is to create some shell scripts to 'sync' the content of a lo
     - log should contain the file path / file name / size / date modified - for each modified file
     - log should contain the total number of modified files and the total size of modified files
     - when logging an entry in this case we want to have one 'name' since the name is unique, but to have 2 columns for date modified and point to 'possible newest' and 'possible oldest' to help us review these files later and decide which one to keep, or if we need to keep both of them.
+
+## Remove empty folders
+    - at the end of the process, after files have been moved out of the 'Old' folder (duplicates quarantined, new files moved to the original), some folders inside the 'Old' folder may be left empty.
+    - check for any remaining empty folders and remove them (including the 'Old' folder itself if it becomes completely empty after syncing).
+    - log the removed empty folder paths in the 'sync-summary.html' file for future reference.

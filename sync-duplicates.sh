@@ -126,6 +126,7 @@ NEW_ROWS=""    ; NEW_COUNT=0    ; NEW_BYTES=0
 MOD_ROWS=""    ; MOD_COUNT=0
 PAIR_ROWS=""   ; PAIR_COUNT=0
 EMPTY_ROWS=""  ; EMPTY_COUNT=0
+DSSTORE_COUNT=0
 
 # ---------------------------------------------------------------------------
 # 2. Pair discovery
@@ -166,6 +167,16 @@ for OLD_DIR in "${OLD_DIRS[@]}"; do
   # with spaces/newlines are handled safely.
   while IFS= read -r -d '' OLD_FILE; do
     REL="${OLD_FILE#"$OLD_DIR"/}"
+
+    # macOS junk: delete .DS_Store outright (never quarantined). Removing them
+    # lets the empty-folder cleanup collapse folders that held only this file.
+    if [[ "$(basename "$OLD_FILE")" == ".DS_Store" ]]; then
+      rm -f "$OLD_FILE"
+      DSSTORE_COUNT=$((DSSTORE_COUNT + 1))
+      action "$C_GREY" "skipped" "$REL ${C_GREY}→ .DS_Store deleted${C_RESET}"
+      continue
+    fi
+
     ORIG_FILE="$ORIG_DIR/$REL"
 
     old_size="$(file_size "$OLD_FILE")"
@@ -353,6 +364,8 @@ printf '  %s%-22s%s %s%d%s file(s)\n' \
   "$C_YELLOW" "Modified (logged only)" "$C_RESET" "$C_BOLD" "$MOD_COUNT" "$C_RESET" >&2
 printf '  %s%-22s%s %s%d%s folder(s)\n' \
   "$C_GREY" "Empty folders removed" "$C_RESET" "$C_BOLD" "$EMPTY_COUNT" "$C_RESET" >&2
+printf '  %s%-22s%s %s%d%s file(s)\n' \
+  "$C_GREY" ".DS_Store deleted" "$C_RESET" "$C_BOLD" "$DSSTORE_COUNT" "$C_RESET" >&2
 
 title "$C_CYAN" "Generated files & folders"
 info "  ${C_BOLD}Report:${C_RESET}      $SUMMARY_FILE"
